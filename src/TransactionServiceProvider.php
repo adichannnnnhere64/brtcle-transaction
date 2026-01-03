@@ -12,11 +12,11 @@ class TransactionServiceProvider extends ServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__.'/../database/migrations' => database_path('migrations'),
+                __DIR__.'/database/migrations' => database_path('migrations'),
             ], 'transaction-migrations');
 
             $this->publishes([
-                __DIR__.'/../database/factories' => database_path('factories/Adichan/Transaction'),
+                __DIR__.'/database/factories' => database_path('factories/Adichan/Transaction'),
             ], 'transaction-factories');
         }
     }
