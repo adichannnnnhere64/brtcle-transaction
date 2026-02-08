@@ -31,6 +31,17 @@ class TransactionRepository implements TransactionRepositoryInterface
         return $this->model->create($data);
     }
 
+    /**
+     * Create a transaction for a specific model (user, company, etc.)
+     */
+    public function createForTransactionable($transactionable, array $data): TransactionInterface
+    {
+        $data['transactionable_id'] = $transactionable->getKey();
+        $data['transactionable_type'] = get_class($transactionable);
+        
+        return $this->create($data);
+    }
+
     public function update(int|string $id, array $data): TransactionInterface
     {
         $transaction = $this->model->findOrFail($id);
@@ -50,5 +61,13 @@ class TransactionRepository implements TransactionRepositoryInterface
         $transaction->addItem($itemable, $quantity, $price);
 
         return $transaction->items()->latest()->first();
+    }
+
+    /**
+     * Get transactions for a specific transactionable
+     */
+    public function forTransactionable($transactionable): Collection
+    {
+        return $this->model->forTransactionable($transactionable)->get();
     }
 }

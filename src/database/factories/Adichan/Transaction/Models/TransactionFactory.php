@@ -12,8 +12,23 @@ class TransactionFactory extends Factory
     public function definition(): array
     {
         return [
+            'transactionable_id' => 1,
+            'transactionable_type' => 'App\Models\User', // Default to User model
             'status' => 'pending',
             'total' => 0.0,
+            'description' => $this->faker->sentence(),
+            'metadata' => [],
         ];
+    }
+
+    /**
+     * Set the transactionable model
+     */
+    public function forTransactionable($model): self
+    {
+        return $this->state([
+            'transactionable_id' => $model->getKey(),
+            'transactionable_type' => get_class($model),
+        ]);
     }
 }

@@ -6,17 +6,31 @@ use Adichan\Transaction\Interfaces\TransactionInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Collection;
 
 class Transaction extends Model implements TransactionInterface
 {
     use HasFactory;
 
-    protected $fillable = ['status', 'total'];
+    protected $fillable = [
+        'transactionable_id',
+        'transactionable_type',
+        'status', 
+        'total',
+        'description',
+        'metadata',
+    ];
 
     protected $casts = [
         'total' => 'float',
+        'metadata' => 'array',
     ];
+
+    public function transactionable(): MorphTo
+    {
+        return $this->morphTo();
+    }
 
     public function items(): HasMany
     {
@@ -66,7 +80,7 @@ class Transaction extends Model implements TransactionInterface
 
     public function calculateTotal(): float
     {
-        $this->loadMissing('items'); // ← THIS FIXES EVERYTHING
+        $this->loadMissing('items');
 
         $total = $this->items->sum('subtotal');
 
@@ -84,5 +98,24 @@ class Transaction extends Model implements TransactionInterface
     public function cancel(): bool
     {
         return $this->update(['status' => 'cancelled']);
+    }
+
+    /**
+     * Get the transactionable owner (user, company, etc.)
+     */
+    public function getOwner()
+    {
+        return $this->transactionable;
+    }
+
+    /**
+     * Scope for specific transactionable
+     */
+    public function scopeForTransactionable($query, $model)
+    {
+        return $query->where([
+            'transactionable_id' => $model->getKey(),
+            'transactionable_type' => get_class($model),
+        ]);
     }
 }
